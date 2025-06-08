@@ -1,0 +1,329 @@
+<!-- Başlangıç -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DATA SAGE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header {
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: #fff;
+      padding: 2rem 1rem;
+      text-align: center;
+      position: relative;
+    }
+    header h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    header p { font-size: 1.2rem; }
+
+    #themeToggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #fff;
+      color: #333;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 2rem 0;
+      justify-content: center;
+    }
+
+    .sidebar, .content, .panel {
+      background-color: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar {
+      flex: 1;
+      min-width: 250px;
+      max-width: 250px;
+    }
+
+    .content {
+      flex: 2;
+      min-width: 300px;
+    }
+
+    .panel {
+      flex: 1;
+      min-width: 250px;
+      max-width: 250px;
+      overflow-y: auto;
+      max-height: 500px;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      color: #182848;
+      font-size: 1.5rem;
+    }
+
+    .sidebar ul { list-style: none; margin-top: 0.5rem; }
+    .sidebar li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    input[type="text"], input[type="file"], select {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button, .btn {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #4b6cb7;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+    }
+
+    button:hover, .btn:hover {
+      background-color: #3a539b;
+    }
+
+    .alert {
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 4px;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    pre {
+      background-color: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    footer {
+      background: #fff;
+      border-top: 1px solid #ddd;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    footer a { margin: 0 0.5rem; }
+
+    @media(max-width: 768px) {
+      main { flex-direction: column; }
+      .sidebar, .content, .panel { max-width: 100%; }
+    }
+
+    body.dark {
+      background-color: #181a1b;
+      color: #f0f0f0;
+    }
+
+    body.dark .content, body.dark .sidebar, body.dark .panel, body.dark footer {
+      background-color: #2b2d2f;
+      color: #f0f0f0;
+    }
+
+    body.dark pre {
+      background-color: #1e1f21;
+    }
+
+    body.dark .content button, body.dark .btn {
+      background-color: #6a89cc;
+    }
+
+    body.dark .content button:hover, body.dark .btn:hover {
+      background-color: #4a69bd;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>DATA SAGE</h1>
+    <p>AI Destekli Text-to-SQL & Analiz Sistem</p>
+  </div>
+  <button id="themeToggle">🌙 Tema</button>
+</header>
+
+<main class="container">
+  <aside class="sidebar">
+    <h2>Menü</h2>
+    <ul>
+      <li>Anasayfa</li>
+      <li>Özellikler</li>
+      <li>Hakkımızda</li>
+      <li>İletişim</li>
+    </ul>
+  </aside>
+
+  <section class="content">
+    <h2>Veritabanı Yükle (.db)</h2>
+    <form action="/upload_db" method="POST" enctype="multipart/form-data">
+      <input type="file" name="db_file" accept=".db" required>
+      <button type="submit">Yükle</button>
+    </form>
+    {% if current_db %}
+      <p style="margin-top: 0.5rem;"><strong>Yüklü Veritabanı:</strong> {{ current_db }}</p>
+    {% endif %}
+
+    <h2>Sorgu Alanı</h2>
+    <form action="/generate_sql" method="POST">
+      <input type="text" name="text" placeholder="SQL sorgunuzu buraya yazın...">
+      <label for="chart_type">Grafik Türü:</label>
+      <select name="chart_type" id="chart_type">
+        <option value="bar">Bar</option>
+        <option value="line">Line</option>
+        <option value="pie">Pie</option>
+        <option value="doughnut">Doughnut</option>
+      </select>
+      <button type="submit">Sorguyu Gönder</button>
+    </form>
+
+    {% if sql_query %}
+      {% if sql_query.error == "api" or sql_query.error == "sql" %}
+        <div class="alert alert-danger">
+          <strong>Hata:</strong> {{ sql_query.query }}
+        </div>
+      {% else %}
+        <h3>Oluşturulan SQL Sorgusu:</h3>
+        <pre><code class="sql">{{ sql_query.query }}</code></pre>
+        <h3>Sonuç:</h3>
+        <pre id="sql-output">{{ sql_query.result }}</pre>
+        <a href="/download_csv" class="btn">📥 CSV Olarak İndir</a>
+      {% endif %}
+    {% endif %}
+
+    {% if chart_data %}
+      <h3>Grafik Gösterimi</h3>
+      <canvas id="resultChart" style="max-height: 300px;"></canvas>
+      <script>
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        const chartType = "{{ chart_type or 'bar' }}";
+        new Chart(ctx, {
+          type: chartType,
+          data: {
+            labels: {{ chart_data["labels"] | tojson }},
+            datasets: [{
+              label: 'Değerler',
+              data: {{ chart_data["values"] | tojson }},
+              backgroundColor: 'rgba(75, 108, 183, 0.6)',
+              borderColor: 'rgba(75, 108, 183, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: chartType !== 'bar' },
+              tooltip: { enabled: true }
+            },
+            scales: (chartType === 'bar' || chartType === 'line') ? {
+              y: { beginAtZero: true }
+            } : {}
+          }
+        });
+      </script>
+    {% endif %}
+  </section>
+
+  <aside class="panel">
+    <h2>Geçmiş Sorgular</h2>
+    {% if history %}
+      <ul>
+        {% for item in history|reverse %}
+          <li style="margin-bottom: 10px;">
+            <strong>Sorgu:</strong>
+            <pre style="white-space: pre-wrap;">{{ item.sorgu }}</pre>
+            <strong>Sonuç:</strong>
+            <pre style="white-space: pre-wrap;">{{ item.sonuc }}</pre>
+            {% if item.hata %}
+              <span style="color: red;"><strong>Hata:</strong> {{ item.hata }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <form action="/clear_history" method="POST" style="margin-top: 1rem;">
+        <button type="submit" class="btn">Geçmişi Temizle</button>
+      </form>
+    {% else %}
+      <p>Henüz sorgu yok.</p>
+    {% endif %}
+  </aside>
+</main>
+
+<footer>
+  Alt Menü:
+  <a href="#">Dashboard</a> |
+  <a href="#">Rapor İndir</a> |
+  <a href="#">Ayarlar</a> |
+  <a href="#">Tema Seçimi</a>
+</footer>
+
+<!-- Kod renklendirme -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Tema geçişi -->
+<script>
+  const toggleButton = document.getElementById("themeToggle");
+  const currentTheme = localStorage.getItem("theme");
+
+  if (currentTheme === "dark") {
+    document.body.classList.add("dark");
+  }
+
+  toggleButton.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    const newTheme = document.body.classList.contains("dark") ? "dark" : "light";
+    localStorage.setItem("theme", newTheme);
+  });
+</script>
+
+</body>
+</html>
